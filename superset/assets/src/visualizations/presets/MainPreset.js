@@ -40,19 +40,42 @@ import TableChartPlugin from '@superset-ui/legacy-plugin-chart-table';
 import TreemapChartPlugin from '@superset-ui/legacy-plugin-chart-treemap';
 import WordCloudChartPlugin from '@superset-ui/legacy-plugin-chart-word-cloud';
 import WorldMapChartPlugin from '@superset-ui/legacy-plugin-chart-world-map';
+//echarts
+import TimeSeriesScatterChartPlugin from '../TimeSeriesScatter/TimeSeriesScatterChartPlugin';
+import MixLineBarChartPlugin from '../MixLineBar/MixLineBarChartPlugin';
+import BasicRadarChartPlugin from '../BasicRadarChart/BasicRadarChartPlugin';
+import ChineseMapPlugin from '../ChineseMap/ChineseMapPlugin';
+import WordCloudPlugin from '../WordCloud/WordCloudPlugin';
+import EchartBarChartPlugin from '../echarts/EchartBarChart/EchartBarChartPlugin';
+import EchartPieChartPlugin from '../echarts/EchartPieChart/EchartPieChartPlugin';
+import EchartLineChartPlugin from '../echarts/EchartLineChart/EchartLineChartPlugin';
+import EchartHeatMapPlugin from '../echarts/EchartHeatMap/EchartHeatMapPlugin';
+
+//nvd3_add
+import LinePlusBarPlugin from '../nvd3_add/LinePlusBar/LinePlusBarPlugin';
+// import {
+//   AreaChartPlugin, BarChartPlugin, BoxPlotChartPlugin,
+//   BubbleChartPlugin, DistBarChartPlugin, LineChartPlugin,
+//   LineBarChartPlugin, PieChartPlugin
+// } from '@superset-ui/legacy-preset-chart-nvd3/lib';
+
 // There is a known issue with bubble chart that the bubbles will not show up.
 // (<path d="NaN" />)
 // Make sure to import '@superset-ui/legacy-preset-chart-nvd3/lib'
 // Not '@superset-ui/legacy-preset-chart-nvd3',
 // which will point to '@superset-ui/legacy-preset-chart-nvd3/esm' by default
-import { AreaChartPlugin, BarChartPlugin, BubbleChartPlugin, BulletChartPlugin,
+import {
+  AreaChartPlugin, BarChartPlugin, BubbleChartPlugin, BulletChartPlugin,
   CompareChartPlugin, DistBarChartPlugin, DualLineChartPlugin, LineChartPlugin,
-  LineMultiChartPlugin, PieChartPlugin, TimePivotChartPlugin } from '@superset-ui/legacy-preset-chart-nvd3/lib';
+  LineMultiChartPlugin, PieChartPlugin, TimePivotChartPlugin,
+} from '@superset-ui/legacy-preset-chart-nvd3/lib';
 import { BoxPlotChartPlugin } from '@superset-ui/preset-chart-xy/esm/legacy';
 import { DeckGLChartPreset } from '@superset-ui/legacy-preset-chart-deckgl';
 
 import FilterBoxChartPlugin from '../FilterBox/FilterBoxChartPlugin';
 import TimeTableChartPlugin from '../TimeTable/TimeTableChartPlugin';
+
+
 
 export default class MainPreset extends Preset {
   constructor() {
@@ -101,6 +124,17 @@ export default class MainPreset extends Preset {
         new TreemapChartPlugin().configure({ key: 'treemap' }),
         new WordCloudChartPlugin().configure({ key: 'word_cloud' }),
         new WorldMapChartPlugin().configure({ key: 'world_map' }),
+        new TimeSeriesScatterChartPlugin().configure({ key: 'timeseries_scatter' }),
+        new MixLineBarChartPlugin().configure({ key: 'mix_line_bar' }),
+        new BasicRadarChartPlugin().configure({ key: 'basic_radar_chart' }),
+        new ChineseMapPlugin().configure({ key: 'chinesemap' }),
+        new WordCloudPlugin().configure({ key: 'echart_word_cloud' }),
+        new EchartBarChartPlugin().configure({ key: 'echart_bar_chart' }),
+        new EchartPieChartPlugin().configure({ key: 'echart_pie_chart' }),
+        new EchartLineChartPlugin().configure({ key: 'echart_line_chart' }),
+        new EchartHeatMapPlugin().configure({ key: 'echart_heatmap' }),
+        new LinePlusBarPlugin().configure({ key: 'line_plus_bar' }),
+
       ],
     });
   }

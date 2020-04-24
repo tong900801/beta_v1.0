@@ -37,7 +37,7 @@ const propTypes = {
 };
 
 const defaultProps = {
-  onChange: () => {},
+  onChange: () => { },
 };
 
 const registry = getChartMetadataRegistry();

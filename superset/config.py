@@ -39,6 +39,16 @@ from superset.stats_logger import DummyStatsLogger
 from superset.utils.log import DBEventLogger
 from superset.utils.logging_configurator import DefaultLoggingConfigurator
 
+#redis
+import redis 
+CACHE_DEFAULT_TIMEOUT = 60 * 60 * 24
+CACHE_CONFIG = {
+'CACHE_TYPE': 'redis',
+'CACHE_DEFAULT_TIMEOUT': 60 * 60 * 24, # 1 day default (in secs)
+'CACHE_KEY_PREFIX': 'superset_results',
+'CACHE_REDIS_URL': 'redis://0.0.0.0:6379',
+}
+
 # Realtime stats logger, a StatsD implementation exists
 STATS_LOGGER = DummyStatsLogger()
 EVENT_LOGGER = DBEventLogger()
@@ -94,7 +104,7 @@ SUPERSET_WORKERS = 2  # deprecated
 SUPERSET_CELERY_WORKERS = 32  # deprecated
 
 SUPERSET_WEBSERVER_ADDRESS = "0.0.0.0"
-SUPERSET_WEBSERVER_PORT = 8088
+SUPERSET_WEBSERVER_PORT = 9000
 
 # This is an important setting, and should be lower than your
 # [load balancer / proxy / envoy / kong / ...] timeout settings.
@@ -147,16 +157,17 @@ SHOW_STACKTRACE = True
 # Use all X-Forwarded headers when ENABLE_PROXY_FIX is True.
 # When proxying to a different port, set "x_port" to 0 to avoid downstream issues.
 ENABLE_PROXY_FIX = False
-PROXY_FIX_CONFIG = {"x_for": 1, "x_proto": 1, "x_host": 1, "x_port": 1, "x_prefix": 1}
+PROXY_FIX_CONFIG = {"x_for": 1, "x_proto": 1,
+                    "x_host": 1, "x_port": 1, "x_prefix": 1}
 
 # ------------------------------
 # GLOBALS FOR APP Builder
 # ------------------------------
 # Uncomment to setup Your App name
-APP_NAME = "Superset"
+APP_NAME = "DataMatrix"
 
 # Uncomment to setup an App icon
-APP_ICON = "/static/assets/images/superset-logo@2x.png"
+APP_ICON = "/static/assets/images/veeva.png"
 APP_ICON_WIDTH = 126
 
 # Uncomment to specify where clicking the logo would take the user
@@ -303,7 +314,7 @@ ALLOWED_EXTENSIONS = {"csv", "tsv"}
 # CSV Options: key/value pairs that will be passed as argument to DataFrame.to_csv
 # method.
 # note: index option should not be overridden
-CSV_EXPORT = {"encoding": "utf-8"}
+CSV_EXPORT = {"encoding": "gbk"}
 
 # ---------------------------------------------------
 # Time grain configurations
@@ -393,7 +404,7 @@ BACKUP_COUNT = 30
 QUERY_LOGGER = None
 
 # Set this API key to enable Mapbox visualizations
-MAPBOX_API_KEY = os.environ.get("MAPBOX_API_KEY", "")
+MAPBOX_API_KEY = os.environ.get("MAPBOX_API_KEY", "pk.eyJ1IjoiZXJzaGlzaXFpYW90b25nIiwiYSI6ImNrOHg5YTIzZDB5OXgzbm9rdnBuOWVmZ2IifQ.mrhPaFkqLA58HreCEnwOUQ")
 
 # Maximum number of rows returned from a database
 # in async mode, no more than SQL_MAX_ROW will be returned and stored
@@ -573,7 +584,10 @@ BLUEPRINTS: List[Callable] = []
 # Provide a callable that receives a tracking_url and returns another
 # URL. This is used to translate internal Hadoop job tracker URL
 # into a proxied one
-TRACKING_URL_TRANSFORMER = lambda x: x
+
+
+def TRACKING_URL_TRANSFORMER(x): return x
+
 
 # Interval between consecutive polls when using Hive Engine
 HIVE_POLL_INTERVAL = 5
@@ -742,7 +756,8 @@ elif importlib.util.find_spec("superset_config"):
         from superset_config import *  # pylint: disable=import-error
         import superset_config  # pylint: disable=import-error
 
-        print(f"Loaded your LOCAL configuration at [{superset_config.__file__}]")
+        print(
+            f"Loaded your LOCAL configuration at [{superset_config.__file__}]")
     except Exception:
         logging.exception("Found but failed to import local superset_config")
         raise

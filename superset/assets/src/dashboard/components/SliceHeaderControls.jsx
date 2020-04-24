@@ -109,6 +109,7 @@ class SliceHeaderControls extends React.PureComponent {
       updatedDttm,
       componentId,
       addDangerToast,
+      sliceCanEdit,
     } = this.props;
     const cachedWhen = moment.utc(cachedDttm).fromNow();
     const updatedWhen = updatedDttm ? moment.utc(updatedDttm).fromNow() : '';
@@ -129,12 +130,17 @@ class SliceHeaderControls extends React.PureComponent {
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
-          <MenuItem onClick={this.refreshChart} disabled={!updatedDttm}>
+          {this.props.sliceCanEdit && (
+            <MenuItem onClick={this.refreshChart} disabled={!updatedDttm}>
+              {t('Force refresh')}
+              <div className="refresh-tooltip">{refreshTooltip}</div>
+            </MenuItem>)}
+
+          {/* <MenuItem onClick={this.refreshChart} disabled={!updatedDttm}>
             {t('Force refresh')}
             <div className="refresh-tooltip">{refreshTooltip}</div>
-          </MenuItem>
-
-          <MenuItem divider />
+          </MenuItem> */}
+          {this.props.sliceCanEdit && (<MenuItem divider />)}
 
           {slice.description && (
             <MenuItem onClick={this.toggleExpandSlice}>
@@ -158,7 +164,7 @@ class SliceHeaderControls extends React.PureComponent {
             </MenuItem>
           )}
 
-          <URLShortLinkModal
+          {this.props.sliceCanEdit && (<URLShortLinkModal
             url={getDashboardUrl(
               window.location.pathname,
               getActiveFilters(),
@@ -168,7 +174,7 @@ class SliceHeaderControls extends React.PureComponent {
             isMenuItem
             title={t('Share chart')}
             triggerNode={<span>{t('Share chart')}</span>}
-          />
+          />)}
         </Dropdown.Menu>
       </Dropdown>
     );

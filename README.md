@@ -1,22 +1,4 @@
-<!--
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
--->
-Superset
+Data Matrix
 =========
 
 [![Build Status](https://travis-ci.org/apache/incubator-superset.svg?branch=master)](https://travis-ci.org/apache/incubator-superset)
@@ -27,193 +9,181 @@ Superset
 [![Documentation](https://img.shields.io/badge/docs-apache.org-blue.svg)](https://superset.incubator.apache.org)
 [![dependencies Status](https://david-dm.org/apache/incubator-superset/status.svg?path=superset/assets)](https://david-dm.org/apache/incubator-superset?path=superset/assets)
 
-<img
-  src="https://cloud.githubusercontent.com/assets/130878/20946612/49a8a25c-bbc0-11e6-8314-10bef902af51.png"
-  alt="Superset"
-  width="500"
-/>
+### 0.简介
+##### 0.1 基础介绍
+* 代码版本为superset 0.999.0dev，系统环境为CentOS7，前端已编译。
+* 安装依赖库
+* Python，测试过的有python3.6.9和python3.7.4，都可以
+* Virtualenv--服务器环境可省略
+* Npm(nodejs)
+* Gunicorn
+* Nginx--option，之前安装时没有使用
 
-**Apache Superset** (incubating) is a modern, enterprise-ready
-business intelligence web application
+[Apache Superset (incubating) Github](https://github.com/apache/incubator-superset/tree/master)
 
-[this project used to be named **Caravel**, and **Panoramix** in the past]
+##### 0.2 基础安装
+安装依赖库
+~~~~
+yum upgrade python-setuptools
+yum install gcc gcc-c++ libffi-devel python-devel python-pip python-wheel openssl-devel libsasl2-devel openldap-devel
+yum groupinstall "Development tools"
+yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
+~~~~
 
+安装python
+~~~~python
+#yum安装
+yum update -y
+yum install -y python3
 
-Screenshots & Gifs
-------------------
+#or
+#source安装，python版本查询https://www.python.org/ftp/python/
+curl -O https://www.python.org/ftp/python/3.7.4/Python-3.7.4.tgz
+tar -xzf Python-3.7.4.tgz
+cd Python-3.7.4/
+./configure --enable-optimizations
+make altinstall
+~~~~
 
-**View Dashboards**
+安装Virtualenv
+~~~~python
+pip3 install virtualenv
+~~~~
 
-<kbd><img title="View Dashboards" src="https://raw.githubusercontent.com/apache/incubator-superset/master/superset/assets/images/screenshots/bank_dash.png"></kbd><br/>
+安装npm
+~~~~python
+#yum安装
+curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+sudo yum install nodejs
 
-**Slice & dice your data**
+node --version
+npm --version
+~~~~
 
-<kbd><img title="Slice & dice your data" src="https://raw.githubusercontent.com/apache/incubator-superset/master/superset/assets/images/screenshots/explore.png"></kbd><br/>
+安装Gunicorn
+~~~~python
+#use easy_install安装
+yum install python-setuptools
+easy_install gunicorn
 
-**Query and visualize your data with SQL Lab**
+#or
+#pip安装
+pip3 install gunicorn
+~~~~
 
-<kbd><img title="SQL Lab" src="https://raw.githubusercontent.com/apache/incubator-superset/master/superset/assets/images/screenshots/sqllab.png"></kbd><br/>
+安装Nginx
+~~~~python
+cd /home/
+yum install -y wget #有则无需安装
+wget http://nginx.org/download/nginx-1.13.7.tar.gz
+tar -zxvf nginx-1.13.7.tar.gz
+./configure
+make
+make install
+#nginx一般默认安装好的路径为/usr/local/nginx
+~~~~
 
-**Visualize geospatial data with deck.gl**
+### 1.拉取Master代码
+~~~~python
+git clone git@gitlab.veevadev.com:veevaorion/datamatrix.git
+#or
+git clone https://gitlab.veevadev.com/veevaorion/datamatrix.git
+~~~~
 
-<kbd><img title="Geospatial" src="https://raw.githubusercontent.com/apache/incubator-superset/master/superset/assets/images/screenshots/deckgl_dash.png"></kbd><br/>
+### 2.创建虚拟环境
+~~~~python
+#进入工作路径
+python3 -m virtualenv supersetenv #创建
+source ./supersetenv/bin/activate #激活
+~~~~
 
-**Choose from a wide array of visualizations**
+### 3.安装
+进入datamatrix路径
+##### 3.1 安装依赖
+~~~~python
+#进入datamatrix
+pip3 install -r requirements.txt
+pip3 install -r requirements-dev.txt
+pip3 install -e . # 安装 superset开发者模式
 
-<kbd><img title="Visualizations" src="https://raw.githubusercontent.com/apache/incubator-superset/master/superset/assets/images/screenshots/visualizations.png"></kbd><br/>
+#连接mysql数据库时安装
+pip3 install mysqlclient
+pip3 install pymysql
 
-Apache Superset
----------------
-Apache Superset is a data exploration and visualization web application.
+#使用gunicorn时安装
+pip3 install gevent
+~~~~
 
-Superset provides:
-* An intuitive interface to explore and visualize datasets, and
-    create interactive dashboards.
-* A wide array of beautiful visualizations to showcase your data.
-* Easy, code-free, user flows to drill down and slice and dice the data
-    underlying exposed dashboards. The dashboards and charts acts as a starting
-    point for deeper analysis.
-* A state of the art SQL editor/IDE exposing a rich metadata browser, and
-    an easy workflow to create visualizations out of any result set.
-* An extensible, high granularity security model allowing intricate rules
-    on who can access which product features and datasets.
-    Integration with major
-    authentication backends (database, OpenID, LDAP, OAuth, REMOTE_USER, ...)
-* A lightweight semantic layer, allowing to control how data sources are
-    exposed to the user by defining dimensions and metrics
-* Out of the box support for most SQL-speaking databases
-* Deep integration with Druid allows for Superset to stay blazing fast while
-    slicing and dicing large, realtime datasets
-* Fast loading dashboards with configurable caching
+##### 3.2 初始化数据库
+~~~~python
+#创建admin账号
+flask fab create-admin
+# Username = admin
+# User first name = admin
+# User last name = user 
+# Email = admin@fab.org
+# Password = 123456
 
+#修改为mysql数据库
+#config.py文件
+SQLALCHEMY_DATABASE_URI = 'mysql://root:password@localhost:3306/superset?charset=utf8mb4'
 
-Database Support
-----------------
+#修改一下sqlalchemy配置文件，进入venv/lib/python3.7/site-packages/sqlalchemy/dialects/__init__.py，增加两行
+import pymysql 
+pymysql.install_as_MySQLdb()
 
-Superset speaks many SQL dialects through SQLAlchemy, a Python
-ORM that is compatible with
-[most common databases](https://docs.sqlalchemy.org/en/rel_1_2/core/engines.html).
+#初始化数据库
+superset db upgrade 
+superset init
+#superset load_examples 不需要superset本身案例时可不运行
+#如果数据库有修改则需要migrate，然后再次初始化
+#superset migrate
+#superset db upgrade
+#superset init
+~~~~
 
-A list of currently supported SQL databases can be found
-[here](https://superset.incubator.apache.org/#databases).
+##### 3.3 编译前端代码--无需编译则跳过
+进入前端文件路径/datamatrix/superset/asset
+~~~~python
+npm install
+npm run build #或npm run dev
+~~~~
 
-Apache Druid (Incubating)!
-------
+##### 3.4 运行测试
+进入/datamatrix/superset路径
+~~~~python
+FLASK_ENV=development flask run -h 0.0.0.0 -p 8088 --with-threads
+~~~~
 
-On top of having the ability to query your relational databases,
-Superset ships with deep integration with Druid (a real time distributed
-column-store). When querying Druid,
-Superset can query humongous amounts of data on top of real time dataset.
-Note that Superset does not require Druid in any way to function, it's simply
-another database backend that it can query.
+##### 3.5 Gunicorn后台启动
+~~~~python
+gunicorn \
+      -w 10 \
+      -k gevent \
+      --timeout 120 \
+      -D -b  0.0.0.0:8088 \
+      --limit-request-line 0 \
+      --limit-request-field_size 0 \
+      --statsd-host localhost:8125 \
+      "superset.app:create_app()"
+~~~~
 
-Here's a description of Druid from the http://druid.io website:
+### 4.Redis
+~~~~python
+#添加到config.py，已添加
+import redis 
+CACHE_DEFAULT_TIMEOUT = 60 * 60 * 24
+CACHE_CONFIG = {
+'CACHE_TYPE': 'redis',
+'CACHE_DEFAULT_TIMEOUT': 60 * 60 * 24, # 1 day default (in secs)
+'CACHE_KEY_PREFIX': 'superset_results',
+'CACHE_REDIS_URL': 'redis://0.0.0.0:6379',
+}
+~~~~
 
-*Druid is an open-source analytics data store designed for
-business intelligence (OLAP) queries on event data. Druid provides low
-latency (real-time) data ingestion, flexible data exploration,
-and fast data aggregation. Existing Druid deployments have scaled to
-trillions of events and petabytes of data. Druid is best used to
-power analytic dashboards and applications.*
-
-
-Installation & Configuration
-----------------------------
-
-[See in the documentation](https://superset.incubator.apache.org/installation.html)
-
-
-Resources
--------------
-* [Mailing list](https://lists.apache.org/list.html?dev@superset.apache.org)
-* [Docker image](https://hub.docker.com/r/amancevice/superset/) (community contributed)
-* [Slides from Strata (March 2016)](https://drive.google.com/open?id=0B5PVE0gzO81oOVJkdF9aNkJMSmM)
-* [Stackoverflow tag](https://stackoverflow.com/questions/tagged/apache-superset)
-* [Join our Slack](https://join.slack.com/t/apache-superset/shared_invite/enQtNDMxMDY5NjM4MDU0LWJmOTcxYjlhZTRhYmEyYTMzOWYxOWEwMjcwZDZiNWRiNDY2NDUwNzcwMDFhNzE1ZmMxZTZlZWY0ZTQ2MzMyNTU)
-* [DEPRECATED Google Group](https://groups.google.com/forum/#!forum/airbnb_superset)
-
-
-Contributing
-------------
-
-Interested in contributing? Casual hacking? Check out
-[Contributing.MD](https://github.com/airbnb/superset/blob/master/CONTRIBUTING.md)
-
-
-Who uses Apache Superset (incubating)?
---------------------------------------
-
-Here's a list of organizations who have taken the time to send a PR to let
-the world know they are using Superset. Join our growing community!
-
- 1. [6play](https://www.6play.fr)
- 1. [AiHello](https://www.aihello.com)
- 1. [Airbnb](https://github.com/airbnb)
- 1. [Airboxlab](https://foobot.io)
- 1. [Aktia Bank plc](https://www.aktia.com)
- 1. [American Express](https://www.americanexpress.com)
- 1. [Amino](https://amino.com)
- 1. [Apollo GraphQL](https://www.apollographql.com/)
- 1. [Ascendica Development](http://ascendicadevelopment.com)
- 1. [Astronomer](https://www.astronomer.io)
- 1. [bilibili](https://www.bilibili.com)
- 1. [Brilliant.org](https://brilliant.org/)
- 1. [Capital Service S.A.](http://capitalservice.pl)
- 1. [Clark.de](http://clark.de/)
- 1. [Cloudsmith](https://cloudsmith.io)
- 1. [CnOvit](http://www.cnovit.com/)
- 1. [Deepomatic](https://deepomatic.com/)
- 1. [Dial Once](https://www.dial-once.com/en/)
- 1. [Digit Game Studios](https://www.digitgaming.com/)
- 1. [Douban](https://www.douban.com/)
- 1. [Endress+Hauser](http://www.endress.com/)
- 1. [Faasos](http://faasos.com/)
- 1. [Fanatics](https://www.fanatics.com)
- 1. [FBK - ICT center](http://ict.fbk.eu)
- 1. [Fordeal](http://www.fordeal.com)
- 1. [GFG - Global Fashion Group](https://global-fashion-group.com)
- 1. [GfK Data Lab](http://datalab.gfk.com)
- 1. [Grassroot](https://www.grassrootinstitute.org/)
- 1. [Hostnfly](https://www.hostnfly.com/)
- 1. [HuiShouBao](http://www.huishoubao.com/)
- 1. [Intercom](https://www.intercom.com/)
- 1. [jampp](https://jampp.com/)
- 1. [komoot](https://www.komoot.com/)
- 1. [Konfío](http://konfio.mx)
- 1. [Kuaishou](https://www.kuaishou.com/)
- 1. [Lime](https://www.limebike.com/)
- 1. [Living Goods](https://www.livinggoods.org)
- 1. [Lyft](https://www.lyft.com/)
- 1. [Maieutical Labs](https://maieuticallabs.it)
- 1. [Myra Labs](http://www.myralabs.com/)
- 1. [Now](https://www.now.vn/)
- 1. [Ona](https://ona.io)
- 1. [PeopleDoc](https://www.people-doc.com)
- 1. [Pronto Tools](http://www.prontotools.io)
- 1. [QPID Health](http://www.qpidhealth.com/    )
- 1. [Qunar](https://www.qunar.com/)
- 1. [Safaricom](https://www.safaricom.co.ke/)
- 1. [Scoot](https://scoot.co/)
- 1. [ScopeAI](https://www.getscopeai.com)
- 1. [Shopee](https://shopee.sg)
- 1. [Shopkick](https://www.shopkick.com)
- 1. [Showmax](https://tech.showmax.com)
- 1. [source{d}](https://www.sourced.tech)
- 1. [Steamroot](https://streamroot.io/)
- 1. [Tails.com](https://tails.com)
- 1. [Tenable](https://www.tenable.com)
- 1. [THE ICONIC](http://theiconic.com.au/)
- 1. [TME QQMUSIC/WESING](https://www.tencentmusic.com/)
- 1. [Tobii](http://www.tobii.com/)
- 1. [Tooploox](https://www.tooploox.com/)
- 1. [TrustMedis](https://trustmedis.com)
- 1. [Twitter](https://twitter.com/)
- 1. [Udemy](https://www.udemy.com/)
- 1. [VIPKID](https://www.vipkid.com.cn/)
- 1. [WeSure](https://www.wesure.cn/)
- 1. [Windsor.ai](https://www.windsor.ai/)
- 1. [WP-Semantix](https://wpsemantix.com/)
- 1. [Yahoo!](https://yahoo.com/)
- 1. [Zaihang](http://www.zaih.com/)
- 1. [Zalando](https://www.zalando.com)
- 1. [Zalora](https://www.zalora.com)
+### 5.其他
+##### 打开防火墙
+~~~~linux
+sudo firewall-cmd --zone=public --add-port=8000/tcp --permanent
+sudo firewall-cmd --reload
+~~~~

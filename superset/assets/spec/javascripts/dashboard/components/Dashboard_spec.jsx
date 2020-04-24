@@ -37,10 +37,10 @@ import newComponentFactory from '../../../../src/dashboard/util/newComponentFact
 describe('Dashboard', () => {
   const props = {
     actions: {
-      addSliceToDashboard() {},
-      removeSliceFromDashboard() {},
-      triggerQuery() {},
-      logEvent() {},
+      addSliceToDashboard() { },
+      removeSliceFromDashboard() { },
+      triggerQuery() { },
+      logEvent() { },
     },
     initMessages: [],
     dashboardState,

@@ -35,7 +35,7 @@ describe('Chart', () => {
     id: queryId,
     width: 100,
     height: 100,
-    updateSliceName() {},
+    updateSliceName() { },
 
     // from redux
     chart: chartQueries[queryId],
@@ -48,10 +48,10 @@ describe('Chart', () => {
     sliceName: sliceEntities.slices[queryId].slice_name,
     timeout: 60,
     filters: {},
-    refreshChart() {},
-    toggleExpandSlice() {},
-    addFilter() {},
-    logEvent() {},
+    refreshChart() { },
+    toggleExpandSlice() { },
+    addFilter() { },
+    logEvent() { },
     editMode: false,
     isExpanded: false,
     supersetCanExplore: false,

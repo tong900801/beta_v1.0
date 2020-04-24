@@ -54,6 +54,7 @@ function mapStateToProps(
 
   return {
     chart,
+    dashboardInfo,
     datasource:
       (chart && chart.form_data && datasources[chart.form_data.datasource]) ||
       {},
@@ -73,6 +74,7 @@ function mapStateToProps(
     supersetCanExplore: !!dashboardInfo.superset_can_explore,
     supersetCanCSV: !!dashboardInfo.superset_can_csv,
     sliceCanEdit: !!dashboardInfo.slice_can_edit,
+    userCanEdit: dashboardInfo.dash_edit_perm,
   };
 }
 

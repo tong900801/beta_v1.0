@@ -66,13 +66,14 @@ METRIC_KEYS = [
     "metrics",
     "percent_metrics",
     "metric_2",
+    "metric_3",
     "secondary_metric",
     "x",
     "y",
     "size",
 ]
 
-
+   
 class BaseViz(object):
 
     """All visualizations derive this base class"""
@@ -594,7 +595,7 @@ class TableViz(BaseViz):
         data = self.handle_js_int_overflow(
             dict(records=df.to_dict(orient="records"), columns=list(df.columns))
         )
-
+        print(data)
         return data
 
     def json_dumps(self, obj, sort_keys=False):
@@ -642,6 +643,486 @@ class TimeTableViz(BaseViz):
         )
 
 
+
+# 新增
+class TimeSeriesScatterViz(BaseViz):
+    viz_type = 'timeseries_scatter'
+    verbose_name = "Time Series Scatter"
+    sort_series = False
+    is_timeseries = False
+    
+    def query_obj(self):
+        d = super().query_obj()
+        d["groupby"] = self.form_data.get("groupby")
+        m1 = self.form_data.get("metric")
+        m2 = self.form_data.get("metric_2")
+        d["metrics"] = [m1, m2]
+        if not m1:
+            raise Exception(_("Pick a metric for left axis!"))
+        if not m2:
+            raise Exception(_("Pick a metric for right axis!"))
+        if m1 == m2:
+            raise Exception(
+                _("Please choose different metrics" " on left and right axis")
+            )
+        return d
+
+    def to_series(self, df, classed=""):
+        cols = []
+        for col in df.columns:
+            if col == "":
+                cols.append("N/A")
+            elif col is None:
+                cols.append("NULL")
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict("series")
+        chart_data = []
+        metrics = [self.form_data.get("metric"), self.form_data.get("metric_2")]
+        print(metrics)
+        for i, m in enumerate(metrics):
+            m = utils.get_metric_name(m)
+            ys = series[m]
+            if df[m].dtype.kind not in "biufc":
+                continue
+            series_title = m
+            y1 = []
+            
+            d = {
+                "key": series_title,
+                "classed": classed,
+                "values": [
+                    {"x": ds, "y": ys[ds] if ds in ys else None} for ds in df.index
+                ],
+                "yAxis": i + 1,
+                "type": "line",
+            }
+            chart_data.append(d)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+
+        if self.form_data.get("granularity") == "all":
+            raise Exception(_("Pick a time granularity for your time series"))
+        group_by = fd.get("groupby")
+        metric = utils.get_metric_name(fd.get("metric"))
+        metric_2 = utils.get_metric_name(fd.get("metric_2"))
+        #df = df.pivot_table(index=DTTM_ALIAS, values=[metric, metric_2])
+        df = df.pivot_table(index=group_by, values=[metric, metric_2])
+        df.sort_values(by=metric, ascending=False, inplace=True)
+        chart_data = self.to_series(df)
+        return chart_data
+ 
+    
+
+
+class MixLineBarViz(BaseViz):
+    viz_type = 'mix_line_bar'
+    verbose_name = "Mix Line Bar"
+    sort_series = False
+    is_timeseries = False
+
+    def query_obj(self):
+        d = super().query_obj()
+        d["groupby"] = self.form_data.get("groupby")
+        m1 = self.form_data.get("metric")
+        m2 = self.form_data.get("metric_2")
+        d["metrics"] = [m1, m2]
+        if not m1:
+            raise Exception(_("Pick a metric for left axis!"))
+        if not m2:
+            raise Exception(_("Pick a metric for right axis!"))
+        if m1 == m2:
+            raise Exception(
+                _("Please choose different metrics" " on left and right axis")
+            )
+        return d
+
+    def to_series(self, df, classed=""):
+        cols = []
+        for col in df.columns:
+            if col == "":
+                cols.append("N/A")
+            elif col is None:
+                cols.append("NULL")
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict("series")
+        chart_data = []
+        metrics = [self.form_data.get("metric"), self.form_data.get("metric_2")]
+        for i, m in enumerate(metrics):
+            m = utils.get_metric_name(m)
+            ys = series[m]
+            if df[m].dtype.kind not in "biufc":
+                continue
+            series_title = m
+            d = {
+                "key": series_title,
+                "classed": classed,
+                "values": [
+                    {"x": ds, "y": ys[ds] if ds in ys else None} for ds in df.index
+                ],
+                "yAxis": i + 1,
+                "type": "line",
+            }
+            chart_data.append(d)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+
+        if self.form_data.get("granularity") == "all":
+            raise Exception(_("Pick a time granularity for your time series"))
+        group_by = fd.get("groupby")
+        metric = utils.get_metric_name(fd.get("metric"))
+        metric_2 = utils.get_metric_name(fd.get("metric_2"))
+        #df = df.pivot_table(index=DTTM_ALIAS, values=[metric, metric_2])
+        df = df.pivot_table(index=group_by, values=[metric, metric_2])
+
+        chart_data = self.to_series(df)
+        print(metric)
+        return chart_data
+
+
+class BasicRadarChartViz(BaseViz):
+    viz_type = 'basic_radar_chart'
+    verbose_name = "Basic Radar Chart"
+    sort_series = False
+    is_timeseries = False
+
+    def query_obj(self):
+        d = super().query_obj()
+        d["groupby"] = self.form_data.get("groupby")
+       
+       
+        m1 = self.form_data.get("metric")
+        m2 = self.form_data.get("metric_2")
+        m3 = self.form_data.get("x")
+        d["metrics"] = [m1, m2, m3]
+        if not m1:
+            raise Exception(_("Pick a metric for left axis!"))
+        if not m2:
+            raise Exception(_("Pick a metric for right axis!"))
+        if m1 == m2:
+            raise Exception(
+                _("Please choose different metrics" " on left and right axis")
+            )
+        return d
+
+    def to_series(self, df, classed=""):
+        cols = []
+        for col in df.columns:
+            if col == "":
+                cols.append("N/A")
+            elif col is None:
+                cols.append("NULL")
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict("series")
+        chart_data = []
+        metrics = [self.form_data.get("metric"), self.form_data.get("metric_2"),self.form_data.get("x")]
+        for i, m in enumerate(metrics):
+            m = utils.get_metric_name(m)
+            ys = series[m]
+            if df[m].dtype.kind not in "biufc":
+                continue
+            series_title = m
+            d = {
+                "key": series_title,
+                "classed": classed,
+                "values": [
+                    {"name": ds, "max": ys[ds] if ds in ys else None} for ds in df.index
+                ],
+                "yAxis": i + 1,
+                "type": "line",
+            }
+            chart_data.append(d)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+
+        if self.form_data.get("granularity") == "all":
+            raise Exception(_("Pick a time granularity for your time series"))
+        group_by = fd.get("groupby")
+        
+        metric = utils.get_metric_name(fd.get("metric"))
+        metric_2 = utils.get_metric_name(fd.get("metric_2"))
+        metric_3 = utils.get_metric_name(fd.get("x"))
+        #df = df.pivot_table(index=DTTM_ALIAS, values=[metric, metric_2])
+        df = df.pivot_table(index=group_by, values=[metric, metric_2, metric_3])
+        print(group_by)
+        # print(entity)     
+        chart_data = self.to_series(df)
+        return chart_data
+
+
+class ChineseMapViz(BaseViz):
+
+    """A country centric"""
+
+    viz_type = "chinesemap"
+    verbose_name = _("ChineseMap")
+    is_timeseries = False
+    credits = "From bl.ocks.org By john-guerra"
+
+    def query_obj(self):
+        qry = super().query_obj()
+        qry["metrics"] = [self.form_data["metric"]]
+        qry["groupby"] = [self.form_data["entity"]]
+        return qry
+
+    def get_data(self, df):
+        fd = self.form_data
+        cols = [fd.get("entity")]
+        metric = self.metric_labels[0]
+        cols += [metric]
+        ndf = df[cols]
+        df = ndf
+        df.columns = ["name", "value"]
+        d = df.to_dict(orient="records")
+        return d
+
+
+class EchartWordCloudViz(BaseViz):
+
+    """A echart word cloud"""
+
+    viz_type = "echart_word_cloud"
+    verbose_name = _("EchartWordCloud")
+    is_timeseries = False
+    credits = "From bl.ocks.org By john-guerra"
+
+    def query_obj(self):
+        qry = super().query_obj()
+        qry["metrics"] = [self.form_data["metric"]]
+        qry["groupby"] = [self.form_data["entity"]]
+        return qry
+
+    def get_data(self, df):
+        fd = self.form_data
+        cols = [fd.get("entity")]
+        metric = self.metric_labels[0]
+        cols += [metric]
+        ndf = df[cols]
+        df = ndf
+        df.columns = ["name", "value"]
+        d = df.to_dict(orient="records")
+        return d
+
+
+class LinePlusBarViz(BaseViz):
+    viz_type = 'line_plus_bar'
+    verbose_name = "Line Plus Bar"
+    sort_series = False
+    is_timeseries = False
+
+    def query_obj(self):
+        d = super().query_obj()
+        d["groupby"] = self.form_data.get("groupby")
+        m1 = self.form_data.get("metric")
+        m2 = self.form_data.get("metric_2")
+        d["metrics"] = [m1, m2]
+        if not m1:
+            raise Exception(_("Pick a metric for left axis!"))
+        if not m2:
+            raise Exception(_("Pick a metric for right axis!"))
+        if m1 == m2:
+            raise Exception(
+                _("Please choose different metrics" " on left and right axis")
+            )
+        return d
+
+    def to_series(self, df, classed=""):
+        cols = []
+        for col in df.columns:
+            if col == "":
+                cols.append("N/A")
+            elif col is None:
+                cols.append("NULL")
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict("series")
+        chart_data = []
+        metrics = [self.form_data.get("metric"), self.form_data.get("metric_2")]
+        for i, m in enumerate(metrics):
+            m = utils.get_metric_name(m)
+            ys = series[m]
+            if df[m].dtype.kind not in "biufc":
+                continue
+            series_title = m
+            d = {
+                "key": series_title,
+                "classed": classed,
+                "values": [
+                    {"x": ds, "y": ys[ds] if ds in ys else None} for ds in df.index
+                ],
+                "yAxis": i + 1,
+                "type": "line",
+            }
+            chart_data.append(d)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+
+        if self.form_data.get("granularity") == "all":
+            raise Exception(_("Pick a time granularity for your time series"))
+        group_by = fd.get("groupby")
+        metric = utils.get_metric_name(fd.get("metric"))
+        metric_2 = utils.get_metric_name(fd.get("metric_2"))
+        #df = df.pivot_table(index=DTTM_ALIAS, values=[metric, metric_2])
+        df = df.pivot_table(index=group_by, values=[metric, metric_2])
+
+        chart_data = self.to_series(df)
+        print(metric)
+        return chart_data
+
+
+class EchartBarChartViz(BaseViz):
+    viz_type = 'echart_bar_chart'
+    verbose_name = "Echart Bar Chart"
+    sort_series = False
+    is_timeseries = False
+
+    def query_obj(self):
+        d = super().query_obj()
+        d["groupby"] = self.form_data.get("groupby")
+        m1 = self.form_data.get("metric")
+        m2 = self.form_data.get("metric_2")
+        d["metrics"] = [m1, m2]
+        if not m1:
+            raise Exception(_("Pick a metric for left axis!"))
+        if not m2:
+            raise Exception(_("Pick a metric for right axis!"))
+        if m1 == m2:
+            raise Exception(
+                _("Please choose different metrics" " on left and right axis")
+            )
+        return d
+
+    def to_series(self, df, classed=""):
+        cols = []
+        for col in df.columns:
+            if col == "":
+                cols.append("N/A")
+            elif col is None:
+                cols.append("NULL")
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict("series")
+        chart_data = []
+        metrics = [self.form_data.get("metric"), self.form_data.get("metric_2")]
+        for i, m in enumerate(metrics):
+            m = utils.get_metric_name(m)
+            ys = series[m]
+            if df[m].dtype.kind not in "biufc":
+                continue
+            series_title = m
+            d = {
+                "key": series_title,
+                "classed": classed,
+                "values": [
+                    {"x": ds, "y": ys[ds] if ds in ys else None} for ds in df.index
+                ],
+                "yAxis": i + 1,
+                "type": "line",
+            }
+            chart_data.append(d)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+
+        if self.form_data.get("granularity") == "all":
+            raise Exception(_("Pick a time granularity for your time series"))
+        group_by = fd.get("groupby")
+        metric = utils.get_metric_name(fd.get("metric"))
+        metric_2 = utils.get_metric_name(fd.get("metric_2"))
+        #df = df.pivot_table(index=DTTM_ALIAS, values=[metric, metric_2])
+        df = df.pivot_table(index=group_by, values=[metric, metric_2])
+
+        chart_data = self.to_series(df)
+        print(metric)
+        return chart_data
+
+
+# class EchartLineChartViz(BaseViz):
+#     viz_type = "echart_line_chart"
+#     verbose_name = _("Echart Line Chart")
+#     credits = 'a <a href="https://github.com/airbnb/superset">Superset</a> original'
+#     is_timeseries = False
+#     enforce_numerical_metrics = False
+
+#     def query_obj(self):
+#         d = super().query_obj()
+#         d["groupby"] = self.form_data.get("groupby")
+#         m1 = self.form_data.get("metric")
+#         m2 = self.form_data.get("metric_2")
+#         d["metrics"] = [m1, m2]
+#         if not m1:
+#             raise Exception(_("Pick a metric for left axis!"))
+#         if not m2:
+#             raise Exception(_("Pick a metric for right axis!"))
+#         if m1 == m2:
+#             raise Exception(
+#                 _("Please choose different metrics" " on left and right axis")
+#             )
+#         return d
+
+#     def to_series(self, df, classed=""):
+#         cols = []
+#         for col in df.columns:
+#             if col == "":
+#                 cols.append("N/A")
+#             elif col is None:
+#                 cols.append("NULL")
+#             else:
+#                 cols.append(col)
+#         df.columns = cols
+#         series = df.to_dict("series")
+#         chart_data = []
+#         metrics = [self.form_data.get("metric"), self.form_data.get("metric_2")]
+#         for i, m in enumerate(metrics):
+#             m = utils.get_metric_name(m)
+#             ys = series[m]
+#             if df[m].dtype.kind not in "biufc":
+#                 continue
+#             series_title = m
+#             d = {
+#                 "key": series_title,
+#                 "classed": classed,
+#                 "values": [
+#                     {"x": ds, "y": ys[ds] if ds in ys else None} for ds in df.index
+#                 ],
+#                 "yAxis": i + 1,
+#                 "type": "line",
+#             }
+#             chart_data.append(d)
+#         return chart_data
+
+#     def get_data(self, df):
+#         fd = self.form_data
+
+#         if self.form_data.get("granularity") == "all":
+#             raise Exception(_("Pick a time granularity for your time series"))
+#         group_by = fd.get("groupby")
+#         metric = utils.get_metric_name(fd.get("metric"))
+#         metric_2 = utils.get_metric_name(fd.get("metric_2"))
+#         #df = df.pivot_table(index=DTTM_ALIAS, values=[metric, metric_2])
+#         df = df.pivot_table(index=group_by, values=[metric, metric_2])
+
+#         chart_data = self.to_series(df)
+        
+#         return chart_data
+
+
 class PivotTableViz(BaseViz):
 
     """A pivot table view, define your rows, columns and metrics"""
@@ -656,6 +1137,7 @@ class PivotTableViz(BaseViz):
         groupby = self.form_data.get("groupby")
         columns = self.form_data.get("columns")
         metrics = self.form_data.get("metrics")
+        series = self.form_data.get("series")
         transpose = self.form_data.get("transpose_pivot")
         if not columns:
             columns = []
@@ -702,6 +1184,7 @@ class PivotTableViz(BaseViz):
         # Display metrics side by side with each column
         if self.form_data.get("combine_metric"):
             df = df.stack(0).unstack()
+        print(df)
         return dict(
             columns=list(df.columns),
             html=df.to_html(
@@ -839,7 +1322,7 @@ class CalHeatmapViz(BaseViz):
             range_ = diff_secs // (24 * 60 * 60) + 1
         else:
             range_ = diff_secs // (60 * 60) + 1
-
+        print(data)
         return {
             "data": data,
             "start": start,
@@ -864,7 +1347,81 @@ class NVD3Viz(BaseViz):
     verbose_name = "Base NVD3 Viz"
     is_timeseries = False
 
+class LineBarViz(NVD3Viz):
 
+    """A simple line bar chart with dual axis"""
+
+    viz_type = 'line_bar'
+    verbose_name = _('Time Series - Line Bar Chart')
+    sort_series = False
+    is_timeseries = True
+
+    def query_obj(self):
+        d = super(LineBarViz, self).query_obj()
+        m1 = self.form_data.get('metric')
+        m2 = self.form_data.get('metric_2')
+        d['metrics'] = [m1, m2]
+        if not m1:
+            raise Exception(_('Pick a metric for left(bar) axis!'))
+        if not m2:
+            raise Exception(_('Pick a metric for right(line) axis!'))
+        if m1 == m2:
+            raise Exception(_('Please choose different metrics'
+                            ' on left and right axis'))
+        return d
+
+    def to_series(self, df, classed=''):
+        cols = []
+        for col in df.columns:
+            if col == '':
+                cols.append('N/A')
+            elif col is None:
+                cols.append('NULL')
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict('series')
+        chart_data = []
+        metrics = [
+            self.form_data.get('metric'),
+            self.form_data.get('metric_2'),
+        ]
+        for i, m in enumerate(metrics):
+
+            ys = series[m['label']]
+            if df[m['label']].dtype.kind not in 'biufc':
+                continue
+            series_title = m['label']
+            d = {
+                'key': series_title,
+                'classed': classed,
+                'values': [
+                    {'x': ds, 'y': ys[ds] if ds in ys else None}
+                    for ds in df.index
+                ],
+                'yAxis': i + 1,
+                'type': 'bar' if i == 0 else 'line',
+            }
+            chart_data.append(d)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+
+        if self.form_data.get('granularity') == 'all':
+            raise Exception(_('Pick a time granularity for your time series'))
+
+        metric = utils.get_metric_name(fd.get('metric'))
+        metric_2 = utils.get_metric_name(fd.get('metric_2'))
+        df = df.pivot_table(
+            index=DTTM_ALIAS,
+            values=[metric, metric_2])
+
+        chart_data = self.to_series(df)
+        return chart_data  
+
+        
 class BoxPlotViz(NVD3Viz):
 
     """Box plot viz from ND3"""
@@ -976,6 +1533,7 @@ class BubbleViz(NVD3Viz):
         return d
 
     def get_data(self, df):
+        
         df["x"] = df[[utils.get_metric_name(self.x_metric)]]
         df["y"] = df[[utils.get_metric_name(self.y_metric)]]
         df["size"] = df[[utils.get_metric_name(self.z_metric)]]
@@ -988,6 +1546,7 @@ class BubbleViz(NVD3Viz):
         chart_data = []
         for k, v in series.items():
             chart_data.append({"key": k, "values": v})
+        print(chart_data)
         return chart_data
 
 
@@ -1053,6 +1612,7 @@ class BigNumberViz(BaseViz):
             raise Exception(_("Pick a metric!"))
         d["metrics"] = [self.form_data.get("metric")]
         self.form_data["metric"] = metric
+        print(d)
         return d
 
 
@@ -1273,6 +1833,7 @@ class NVD3TimeSeriesViz(NVD3Viz):
 
         if not self.sort_series:
             chart_data = sorted(chart_data, key=lambda x: tuple(x["key"]))
+        print(chart_data)
         return chart_data
 
 
@@ -1298,12 +1859,15 @@ class MultiLineViz(NVD3Viz):
         slices1 = db.session.query(Slice).filter(Slice.id.in_(slice_ids1)).all()
         slice_ids2 = fd.get("line_charts_2")
         slices2 = db.session.query(Slice).filter(Slice.id.in_(slice_ids2)).all()
+        print(slices1)
+        print(slices2)
         return {
             "slices": {
                 "axis1": [slc.data for slc in slices1],
                 "axis2": [slc.data for slc in slices2],
             }
         }
+
 
 
 class NVD3DualLineViz(NVD3Viz):
@@ -1372,6 +1936,7 @@ class NVD3DualLineViz(NVD3Viz):
         df = df.pivot_table(index=DTTM_ALIAS, values=[metric, metric_2])
 
         chart_data = self.to_series(df)
+        print(chart_data)
         return chart_data
 
 
@@ -1461,6 +2026,33 @@ class DistributionPieViz(NVD3Viz):
         df = df.reset_index()
         df.columns = ["x", "y"]
         return df.to_dict(orient="records")
+
+
+class EchartPieViz(NVD3Viz):
+
+    """Annoy visualization snobs with this controversial pie chart"""
+
+    viz_type = "echart_pie_chart"
+    verbose_name = _("Echart Pie Chart")
+    is_timeseries = False
+
+    def get_data(self, df):
+        metric = self.metric_labels[0]
+        df = df.pivot_table(index=self.groupby, values=[metric])
+        df.sort_values(by=metric, ascending=False, inplace=True)
+        df = df.reset_index()
+        df.columns = ["name", "value"]
+        return df.to_dict(orient="records")
+
+class EchartLineChartViz(NVD3Viz):
+
+    """Annoy visualization snobs with this controversial pie chart"""
+
+    viz_type = "echart_line_chart"
+    verbose_name = _("Echart Line CHart")
+    is_timeseries = False
+    sort_series = True
+
 
 
 class HistogramViz(BaseViz):
@@ -1930,6 +2522,58 @@ class HeatmapViz(BaseViz):
             df["perc"] = (df.v - min_) / (max_ - min_)
             df["rank"] = df.v.rank(pct=True)
         return {"records": df.to_dict(orient="records"), "extents": [min_, max_]}
+
+
+
+class EchartHeatMapViz(BaseViz):
+
+    """A nice heatmap visualization that support high density through canvas"""
+
+    viz_type = "echart_heatmap"
+    verbose_name = _("Echart Heatmap")
+    is_timeseries = False
+    credits = (
+        'inspired from mbostock @<a href="http://bl.ocks.org/mbostock/3074470">'
+        "bl.ocks.org</a>"
+    )
+
+    def query_obj(self):
+        d = super().query_obj()
+        fd = self.form_data
+        d["metrics"] = [fd.get("metric")]
+        d["groupby"] = [fd.get("all_columns_x"), fd.get("all_columns_y")]
+        return d
+
+    def get_data(self, df):
+        fd = self.form_data
+        x = fd.get("all_columns_x")
+        y = fd.get("all_columns_y")
+        v = self.metric_labels[0]
+        if x == y:
+            df.columns = ["x", "y", "v"]
+        else:
+            df = df[[x, y, v]]
+            df.columns = ["x", "y", "v"]
+        norm = fd.get("normalize_across")
+        overall = False
+        max_ = df.v.max()
+        min_ = df.v.min()
+        # if norm == "heatmap":
+        #     overall = True
+        # else:
+        #     gb = df.groupby(norm, group_keys=False)
+        #     if len(gb) <= 1:
+        #         overall = True
+        #     else:
+        #         df["perc"] = gb.apply(
+        #             lambda x: (x.v - x.v.min()) / (x.v.max() - x.v.min())
+        #         )
+        #         df["rank"] = gb.apply(lambda x: x.v.rank(pct=True))
+        # if overall:
+        #     df["perc"] = (df.v - min_) / (max_ - min_)
+        #     df["rank"] = df.v.rank(pct=True)
+        return {"records": df.to_dict(orient="records"), "extents": [min_, max_]}
+
 
 
 class HorizonViz(NVD3TimeSeriesViz):

@@ -65,7 +65,8 @@ class CoreTests(SupersetTestCase):
         db.session.query(Query).delete()
 
     def test_login(self):
-        resp = self.get_resp("/login/", data=dict(username="admin", password="general"))
+        resp = self.get_resp(
+            "/login/", data=dict(username="admin", password="general"))
         self.assertNotIn("User confirmation needed", resp)
 
         resp = self.get_resp("/logout/", follow_redirects=True)
@@ -88,8 +89,10 @@ class CoreTests(SupersetTestCase):
         assert "List Roles" in resp
 
         # Testing overrides
-        resp = self.get_resp("/superset/slice/{}/?standalone=true".format(slc.id))
+        resp = self.get_resp(
+            "/superset/slice/{}/?standalone=true".format(slc.id))
         assert '<div class="navbar' not in resp
+        #assert '<div class="dashboard-header' not in resp
 
         resp = self.client.get("/superset/slice/-1/")
         assert resp.status_code == 404
@@ -156,7 +159,8 @@ class CoreTests(SupersetTestCase):
         csv_endpoint = "/superset/explore_json/{}/{}/?csv=true".format(
             slc.datasource_type, slc.datasource_id
         )
-        resp = self.get_resp(csv_endpoint, {"form_data": json.dumps(slc.viz.form_data)})
+        resp = self.get_resp(
+            csv_endpoint, {"form_data": json.dumps(slc.viz.form_data)})
         assert "Jennifer," in resp
 
     def test_slice_csv_endpoint(self):
@@ -406,11 +410,13 @@ class CoreTests(SupersetTestCase):
         database = utils.get_example_database()
         sqlalchemy_uri_decrypted = database.sqlalchemy_uri_decrypted
         url = "databaseview/edit/{}".format(database.id)
-        data = {k: database.__getattribute__(k) for k in DatabaseView.add_columns}
+        data = {k: database.__getattribute__(k)
+                for k in DatabaseView.add_columns}
         data["sqlalchemy_uri"] = database.safe_sqlalchemy_uri()
         self.client.post(url, data=data)
         database = utils.get_example_database()
-        self.assertEqual(sqlalchemy_uri_decrypted, database.sqlalchemy_uri_decrypted)
+        self.assertEqual(sqlalchemy_uri_decrypted,
+                         database.sqlalchemy_uri_decrypted)
 
         # Need to clean up after ourselves
         database.impersonate_user = False
@@ -420,8 +426,10 @@ class CoreTests(SupersetTestCase):
 
     def test_warm_up_cache(self):
         slc = self.get_slice("Girls", db.session)
-        data = self.get_json_resp("/superset/warm_up_cache?slice_id={}".format(slc.id))
-        self.assertEqual(data, [{"slice_id": slc.id, "slice_name": slc.slice_name}])
+        data = self.get_json_resp(
+            "/superset/warm_up_cache?slice_id={}".format(slc.id))
+        self.assertEqual(
+            data, [{"slice_id": slc.id, "slice_name": slc.slice_name}])
 
         data = self.get_json_resp(
             "/superset/warm_up_cache?table_name=energy_usage&db_name=main"
@@ -456,7 +464,8 @@ class CoreTests(SupersetTestCase):
 
         resp = self.client.get("/kv/{}/".format(kv.id))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(json.loads(value), json.loads(resp.data.decode("utf-8")))
+        self.assertEqual(json.loads(value), json.loads(
+            resp.data.decode("utf-8")))
 
     def test_gamma(self):
         self.login(username="gamma")
@@ -524,7 +533,8 @@ class CoreTests(SupersetTestCase):
 
     def test_table_metadata(self):
         maindb = utils.get_example_database()
-        data = self.get_json_resp(f"/superset/table/{maindb.id}/birth_names/null/")
+        data = self.get_json_resp(
+            f"/superset/table/{maindb.id}/birth_names/null/")
         self.assertEqual(data["name"], "birth_names")
         assert len(data["columns"]) > 5
         assert data.get("selectStar").startswith("SELECT")
@@ -553,7 +563,8 @@ class CoreTests(SupersetTestCase):
         resp = self.get_json_resp(url)
         self.assertEqual(resp["count"], 1)
 
-        dash = db.session.query(models.Dashboard).filter_by(slug="births").first()
+        dash = db.session.query(models.Dashboard).filter_by(
+            slug="births").first()
         url = "/superset/favstar/Dashboard/{}/select/".format(dash.id)
         resp = self.get_json_resp(url)
         self.assertEqual(resp["count"], 1)
@@ -561,15 +572,19 @@ class CoreTests(SupersetTestCase):
         userid = security_manager.find_user("admin").id
         resp = self.get_resp("/superset/profile/admin/")
         self.assertIn('"app"', resp)
-        data = self.get_json_resp("/superset/recent_activity/{}/".format(userid))
+        data = self.get_json_resp(
+            "/superset/recent_activity/{}/".format(userid))
         self.assertNotIn("message", data)
-        data = self.get_json_resp("/superset/created_slices/{}/".format(userid))
+        data = self.get_json_resp(
+            "/superset/created_slices/{}/".format(userid))
         self.assertNotIn("message", data)
-        data = self.get_json_resp("/superset/created_dashboards/{}/".format(userid))
+        data = self.get_json_resp(
+            "/superset/created_dashboards/{}/".format(userid))
         self.assertNotIn("message", data)
         data = self.get_json_resp("/superset/fave_slices/{}/".format(userid))
         self.assertNotIn("message", data)
-        data = self.get_json_resp("/superset/fave_dashboards/{}/".format(userid))
+        data = self.get_json_resp(
+            "/superset/fave_dashboards/{}/".format(userid))
         self.assertNotIn("message", data)
         data = self.get_json_resp(
             "/superset/fave_dashboards_by_username/{}/".format(username)
@@ -578,7 +593,8 @@ class CoreTests(SupersetTestCase):
 
     def test_slice_id_is_always_logged_correctly_on_web_request(self):
         # superset/explore case
-        slc = db.session.query(models.Slice).filter_by(slice_name="Girls").one()
+        slc = db.session.query(models.Slice).filter_by(
+            slice_name="Girls").one()
         qry = db.session.query(models.Log).filter_by(slice_id=slc.id)
         self.get_resp(slc.slice_url, {"form_data": json.dumps(slc.form_data)})
         self.assertEqual(1, qry.count())
@@ -586,7 +602,8 @@ class CoreTests(SupersetTestCase):
     def test_slice_id_is_always_logged_correctly_on_ajax_request(self):
         # superset/explore_json case
         self.login(username="admin")
-        slc = db.session.query(models.Slice).filter_by(slice_name="Girls").one()
+        slc = db.session.query(models.Slice).filter_by(
+            slice_name="Girls").one()
         qry = db.session.query(models.Log).filter_by(slice_id=slc.id)
         slc_url = slc.slice_url.replace("explore", "explore_json")
         self.get_json_resp(slc_url, {"form_data": json.dumps(slc.form_data)})
@@ -603,7 +620,8 @@ class CoreTests(SupersetTestCase):
 
     def test_import_csv(self):
         self.login(username="admin")
-        table_name = "".join(random.choice(string.ascii_uppercase) for _ in range(5))
+        table_name = "".join(random.choice(string.ascii_uppercase)
+                             for _ in range(5))
 
         filename_1 = "testCSV.csv"
         test_file_1 = open(filename_1, "w+")
@@ -704,13 +722,16 @@ class CoreTests(SupersetTestCase):
             (datetime.datetime(2017, 11, 18, 21, 53, 0, 219225, tzinfo=tz),),
             (datetime.datetime(2017, 11, 18, 22, 6, 30, 61810, tzinfo=tz),),
         ]
-        df = dataframe.SupersetDataFrame(list(data), [["data"]], BaseEngineSpec)
+        df = dataframe.SupersetDataFrame(
+            list(data), [["data"]], BaseEngineSpec)
         data = df.data
         self.assertDictEqual(
-            data[0], {"data": pd.Timestamp("2017-11-18 21:53:00.219225+0100", tz=tz)}
+            data[0], {"data": pd.Timestamp(
+                "2017-11-18 21:53:00.219225+0100", tz=tz)}
         )
         self.assertDictEqual(
-            data[1], {"data": pd.Timestamp("2017-11-18 22:06:30.061810+0100", tz=tz)}
+            data[1], {"data": pd.Timestamp(
+                "2017-11-18 22:06:30.061810+0100", tz=tz)}
         )
 
     def test_mssql_engine_spec_pymssql(self):
@@ -726,7 +747,8 @@ class CoreTests(SupersetTestCase):
         self.assertEqual(len(data), 2)
         self.assertEqual(
             data[0],
-            {"col1": 1, "col2": 1, "col3": pd.Timestamp("2017-10-19 23:39:16.660000")},
+            {"col1": 1, "col2": 1, "col3": pd.Timestamp(
+                "2017-10-19 23:39:16.660000")},
         )
 
     def test_mssql_engine_spec_odbc(self):
@@ -742,7 +764,8 @@ class CoreTests(SupersetTestCase):
         self.assertEqual(len(data), 2)
         self.assertEqual(
             data[0],
-            {"col1": 1, "col2": 1, "col3": pd.Timestamp("2017-10-19 23:39:16.660000")},
+            {"col1": 1, "col2": 1, "col3": pd.Timestamp(
+                "2017-10-19 23:39:16.660000")},
         )
 
     def test_comments_in_sqlatable_query(self):
@@ -772,7 +795,8 @@ class CoreTests(SupersetTestCase):
                 ]
             }
         )
-        data = self.get_json_resp(json_endpoint, {"form_data": json.dumps(form_data)})
+        data = self.get_json_resp(
+            json_endpoint, {"form_data": json.dumps(form_data)})
         self.assertEqual(data["status"], utils.QueryStatus.SUCCESS)
         self.assertEqual(data["error"], "No data")
 
@@ -789,7 +813,8 @@ class CoreTests(SupersetTestCase):
 
     def test_slice_payload_no_datasource(self):
         self.login(username="admin")
-        data = self.get_json_resp("/superset/explore_json/", raise_on_error=False)
+        data = self.get_json_resp(
+            "/superset/explore_json/", raise_on_error=False)
 
         self.assertEqual(
             data["error"], "The datasource associated with this chart no longer exists"
@@ -817,7 +842,8 @@ class CoreTests(SupersetTestCase):
     def test_select_star(self):
         self.login(username="admin")
         examples_db = utils.get_example_database()
-        resp = self.get_resp(f"/superset/select_star/{examples_db.id}/birth_names")
+        resp = self.get_resp(
+            f"/superset/select_star/{examples_db.id}/birth_names")
         self.assertIn("gender", resp)
 
     @mock.patch("superset.views.core.results_backend_use_msgpack", False)
@@ -950,7 +976,8 @@ class CoreTests(SupersetTestCase):
             deserialized_payload = views._deserialize_results_payload(
                 serialized_payload, query_mock, use_new_deserialization
             )
-            payload["data"] = dataframe.SupersetDataFrame.format_data(cdf.raw_df)
+            payload["data"] = dataframe.SupersetDataFrame.format_data(
+                cdf.raw_df)
 
             self.assertDictEqual(deserialized_payload, payload)
             expand_data.assert_called_once()

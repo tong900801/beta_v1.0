@@ -68,7 +68,20 @@ import TimeTable from '../explore/controlPanels/TimeTable';
 import Treemap from '../explore/controlPanels/Treemap';
 import WordCloud from '../explore/controlPanels/WordCloud';
 import WorldMap from '../explore/controlPanels/WorldMap';
+//echarts
+import TimeSeriesScatter from '../explore/controlPanels/TimeSeriesScatter';
+import MixLineBar from '../explore/controlPanels/MixLineBar';
+import BasicRadarChart from 'src/explore/controlPanels/BasicRadarChart';
+import ChineseMap from 'src/explore/controlPanels/ChineseMap';
+import LineBar from '../explore/controlPanels/LineBar';
+import EchartWordCloud from '../explore/controlPanels/EchartWordCloud';
+import EchartBarChart from '../explore/controlPanels/EchartBarChart';
+import EchartPieChart from '../explore/controlPanels/EchartPieChart';
+import EchartLineChart from '../explore/controlPanels/EchartLineChart';
+import EchartHeatMap from '../explore/controlPanels/EchartHeatMap';
 
+//nvd3_add
+import LinePlusBar from '../explore/controlPanels/LinePlusBar';
 export default function setupPlugins() {
   new MainPreset().register();
 
@@ -121,7 +134,18 @@ export default function setupPlugins() {
     .registerValue('deck_path', DeckPath)
     .registerValue('deck_polygon', DeckPolygon)
     .registerValue('deck_scatter', DeckScatter)
-    .registerValue('deck_screengrid', DeckScreengrid);
+    .registerValue('deck_screengrid', DeckScreengrid)
+    .registerValue('timeseries_scatter', TimeSeriesScatter)
+    .registerValue('mix_line_bar', MixLineBar)
+    .registerValue('basic_radar_chart', BasicRadarChart)
+    .registerValue('chinesemap', ChineseMap)
+    .registerValue('line_bar', LineBar)
+    .registerValue('echart_word_cloud', EchartWordCloud)
+    .registerValue('echart_bar_chart', EchartBarChart)
+    .registerValue('echart_pie_chart', EchartPieChart)
+    .registerValue('echart_line_chart', EchartLineChart)
+    .registerValue('echart_heatmap', EchartHeatMap)
+    .registerValue('line_plus_bar', LinePlusBar);
 
   setupPluginsExtra();
 }

@@ -373,7 +373,8 @@ class Slice(Model, AuditMixinNullable, ImportMixin):
         session = db.session
         make_transient(slc_to_import)
         slc_to_import.dashboards = []
-        slc_to_import.alter_params(remote_id=slc_to_import.id, import_time=import_time)
+        slc_to_import.alter_params(
+            remote_id=slc_to_import.id, import_time=import_time)
 
         slc_to_import = slc_to_import.copy()
         slc_to_import.reset_ownership()
@@ -433,9 +434,13 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
     css = Column(Text)
     json_metadata = Column(Text)
     slug = Column(String(255), unique=True)
-    slices = relationship("Slice", secondary=dashboard_slices, backref="dashboards")
-    owners = relationship(security_manager.user_model, secondary=dashboard_user)
+    slices = relationship(
+        "Slice", secondary=dashboard_slices, backref="dashboards")
+    owners = relationship(security_manager.user_model,
+                          secondary=dashboard_user)
     published = Column(Boolean, default=False)
+    top_category = Column(Text)
+    sub_category = Column(Text)
 
     export_fields = [
         "dashboard_title",
@@ -444,6 +449,8 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
         "description",
         "css",
         "slug",
+        "top_category",
+        "sub_category"
     ]
 
     def __repr__(self):
@@ -577,10 +584,12 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
             dashboard.position_json = json.dumps(position_data)
 
         logging.info(
-            "Started import of the dashboard: {}".format(dashboard_to_import.to_json())
+            "Started import of the dashboard: {}".format(
+                dashboard_to_import.to_json())
         )
         session = db.session
-        logging.info("Dashboard has {} slices".format(len(dashboard_to_import.slices)))
+        logging.info("Dashboard has {} slices".format(
+            len(dashboard_to_import.slices)))
         # copy slices object as Slice.import_slice will mutate the slice
         # and will remove the existing dashboard - slice association
         slices = copy(dashboard_to_import.slices)
@@ -601,7 +610,8 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
                 )
             )
             remote_slc = remote_id_slice_map.get(slc.id)
-            new_slc_id = Slice.import_obj(slc, remote_slc, import_time=import_time)
+            new_slc_id = Slice.import_obj(
+                slc, remote_slc, import_time=import_time)
             old_to_new_slc_id_dict[slc.id] = new_slc_id
             # update json metadata that deals with slice ids
             new_slc_id_str = "{}".format(new_slc_id)
@@ -642,7 +652,8 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
             alter_positions(dashboard_to_import, old_to_new_slc_id_dict)
         dashboard_to_import.alter_params(import_time=import_time)
         if new_expanded_slices:
-            dashboard_to_import.alter_params(expanded_slices=new_expanded_slices)
+            dashboard_to_import.alter_params(
+                expanded_slices=new_expanded_slices)
         if new_filter_immune_slices:
             dashboard_to_import.alter_params(
                 filter_immune_slices=new_filter_immune_slices
@@ -763,7 +774,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
     """
         ),
     )
-    encrypted_extra = Column(EncryptedType(Text, config["SECRET_KEY"]), nullable=True)
+    encrypted_extra = Column(EncryptedType(
+        Text, config["SECRET_KEY"]), nullable=True)
     perm = Column(String(1000))
     impersonate_user = Column(Boolean, default=False)
     export_fields = [
@@ -794,7 +806,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
         extra = self.get_extra()
 
         database_version = extra.get("version")
-        cost_estimate_enabled: bool = extra.get("cost_estimate_enabled")  # type: ignore
+        cost_estimate_enabled: bool = extra.get(
+            "cost_estimate_enabled")  # type: ignore
 
         return (
             self.db_engine_spec.get_allow_cost_estimate(database_version)
@@ -911,7 +924,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
         )
 
         masked_url = self.get_password_masked_url(url)
-        logging.info("Database.get_sqla_engine(). Masked URL: {0}".format(masked_url))
+        logging.info(
+            "Database.get_sqla_engine(). Masked URL: {0}".format(masked_url))
 
         params = extra.get("engine_params", {})
         if nullpool:
@@ -964,7 +978,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
 
         def _log_query(sql: str) -> None:
             if log_query:
-                log_query(engine.url, sql, schema, username, __name__, security_manager)
+                log_query(engine.url, sql, schema, username,
+                          __name__, security_manager)
 
         with closing(engine.raw_connection()) as conn:
             with closing(conn.cursor()) as cursor:
@@ -1067,7 +1082,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
         return self.db_engine_spec.get_all_datasource_names(self, "view")
 
     @cache_util.memoized_func(
-        key=lambda *args, **kwargs: f"db:{{}}:schema:{kwargs.get('schema')}:table_list",  # type: ignore
+        # type: ignore
+        key=lambda *args, **kwargs: f"db:{{}}:schema:{kwargs.get('schema')}:table_list",
         attribute_in_key="id",
     )
     def get_all_table_names_in_schema(
@@ -1099,7 +1115,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
             logging.exception(e)
 
     @cache_util.memoized_func(
-        key=lambda *args, **kwargs: f"db:{{}}:schema:{kwargs.get('schema')}:view_list",  # type: ignore
+        # type: ignore
+        key=lambda *args, **kwargs: f"db:{{}}:schema:{kwargs.get('schema')}:view_list",
         attribute_in_key="id",
     )
     def get_all_view_names_in_schema(
@@ -1311,7 +1328,8 @@ class DatasourceAccessRequest(Model, AuditMixinNullable):
     @datasource.getter  # type: ignore
     @utils.memoized
     def get_datasource(self) -> "BaseDatasource":
-        ds = db.session.query(self.cls_model).filter_by(id=self.datasource_id).first()
+        ds = db.session.query(self.cls_model).filter_by(
+            id=self.datasource_id).first()
         return ds
 
     @property
@@ -1322,7 +1340,8 @@ class DatasourceAccessRequest(Model, AuditMixinNullable):
     def roles_with_datasource(self) -> str:
         action_list = ""
         perm = self.datasource.perm  # pylint: disable=no-member
-        pv = security_manager.find_permission_view_menu("datasource_access", perm)
+        pv = security_manager.find_permission_view_menu(
+            "datasource_access", perm)
         for r in pv.role:
             if r.name in self.ROLES_BLACKLIST:
                 continue

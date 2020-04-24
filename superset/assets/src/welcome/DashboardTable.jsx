@@ -44,7 +44,7 @@ class DashboardTable extends React.PureComponent {
       endpoint: '/dashboardasync/api/read?_oc_DashboardModelViewAsync=changed_on&_od_DashboardModelViewAsync=desc',
     })
       .then(({ json }) => {
-         this.setState({ dashboards: json.result });
+        this.setState({ dashboards: json.result });
       })
       .catch(() => {
         this.props.addDangerToast(t('An error occurred while fethching Dashboards'));
@@ -56,7 +56,7 @@ class DashboardTable extends React.PureComponent {
       return (
         <Table
           className="table"
-          sortable={['dashboard', 'creator', 'modified']}
+          sortable={['dashboard', 'creator', 'modified', 'top_category', 'sub_category', 'sub_sub_category']}
           filterBy={this.props.search}
           filterable={['dashboard', 'creator']}
           itemsPerPage={50}
@@ -65,11 +65,23 @@ class DashboardTable extends React.PureComponent {
             { key: 'dashboard', label: 'Dashboard' },
             { key: 'creator', label: 'Creator' },
             { key: 'modified', label: 'Modified' },
+            { key: 'top_category', label: 'Top Category' },
+            { key: 'sub_category', label: 'Sub Category' },
+            { key: 'sub_sub_category', label: 'Sub Sub Category' },
           ]}
           defaultSort={{ column: 'modified', direction: 'desc' }}
         >
           {this.state.dashboards.map(o => (
             <Tr key={o.id}>
+              <Td column="top_category" value={o.changed_on} className="text-muted">
+                {unsafe(o.top_category)}
+              </Td>
+              <Td column="sub_category" value={o.changed_on} className="text-muted">
+                {unsafe(o.sub_category)}
+              </Td>
+              <Td column="sub_sub_category" value={o.changed_on} className="text-muted">
+                {unsafe(o.sub_sub_category)}
+              </Td>
               <Td column="dashboard" value={o.dashboard_title}>
                 <a href={o.url}>{o.dashboard_title}</a>
               </Td>
@@ -84,7 +96,11 @@ class DashboardTable extends React.PureComponent {
       );
     }
 
-    return <Loading />;
+    return <img
+      className="loading"
+      alt="Loading..."
+      src="/static/assets/images/loading.gif"
+    />;
   }
 }
 

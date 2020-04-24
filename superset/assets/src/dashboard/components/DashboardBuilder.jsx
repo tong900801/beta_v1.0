@@ -194,6 +194,8 @@ class DashboardBuilder extends React.Component {
               {({ dropIndicatorProps }) => (
                 <div>
                   <DashboardHeader />
+
+
                   {dropIndicatorProps && <div {...dropIndicatorProps} />}
                   {topLevelTabs && (
                     <WithPopoverMenu
@@ -207,6 +209,7 @@ class DashboardBuilder extends React.Component {
                       ]}
                       editMode={editMode}
                     >
+
                       <DashboardComponent
                         id={topLevelTabs.id}
                         parentId={DASHBOARD_ROOT_ID}

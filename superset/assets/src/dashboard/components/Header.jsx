@@ -284,153 +284,158 @@ class Header extends React.PureComponent {
     const userCanEdit = dashboardInfo.dash_edit_perm;
     const userCanSaveAs = dashboardInfo.dash_save_perm;
     const popButton = hasUnsavedChanges;
+    if (userCanEdit) {
+      return (
 
-    return (
-      <div className="dashboard-header">
-        <div className="dashboard-component-header header-large">
-          <EditableTitle
-            title={dashboardTitle}
-            canEdit={userCanEdit && editMode}
-            onSaveTitle={this.handleChangeText}
-            showTooltip={false}
-          />
-          <span className="publish">
-            <PublishedStatus
+        <div className="dashboard-header">
+
+          <div className="dashboard-component-header header-large">
+            <EditableTitle
+              title={dashboardTitle}
+              canEdit={userCanEdit && editMode}
+              onSaveTitle={this.handleChangeText}
+              showTooltip={false}
+            />
+            <span className="publish">
+              <PublishedStatus
+                dashboardId={dashboardInfo.id}
+                isPublished={isPublished}
+                savePublished={this.props.savePublished}
+                canEdit={userCanEdit}
+                canSave={userCanSaveAs}
+              />
+            </span>
+            <span className="favstar">
+              <FaveStar
+                itemId={dashboardInfo.id}
+                fetchFaveStar={this.props.fetchFaveStar}
+                saveFaveStar={this.props.saveFaveStar}
+                isStarred={this.props.isStarred}
+              />
+            </span>
+          </div>
+
+
+          <div className="button-container">
+            {userCanSaveAs && (
+              <div className="button-container">
+                {editMode && (
+                  <Button
+                    bsSize="small"
+                    onClick={onUndo}
+                    disabled={undoLength < 1}
+                    bsStyle={this.state.emphasizeUndo ? 'primary' : undefined}
+                  >
+                    <div title="Undo" className="undo-action fa fa-reply" />
+                  </Button>
+                )}
+
+                {editMode && (
+                  <Button
+                    bsSize="small"
+                    onClick={onRedo}
+                    disabled={redoLength < 1}
+                    bsStyle={this.state.emphasizeRedo ? 'primary' : undefined}
+                  >
+                    <div title="Redo" className="redo-action fa fa-share" />
+                  </Button>
+                )}
+
+                {editMode && (
+                  <Button
+                    active={builderPaneType === BUILDER_PANE_TYPE.ADD_COMPONENTS}
+                    bsSize="small"
+                    onClick={this.onInsertComponentsButtonClick}
+                  >
+                    {t('Components')}
+                  </Button>
+                )}
+
+                {editMode && (
+                  <Button
+                    active={builderPaneType === BUILDER_PANE_TYPE.COLORS}
+                    bsSize="small"
+                    onClick={this.onColorsButtonClick}
+                  >
+                    {t('Colors')}
+                  </Button>
+                )}
+
+                {editMode && (
+                  <FilterScopeModal
+                    triggerNode={<Button bsSize="small">{t('Filters')}</Button>}
+                  />
+                )}
+
+                {editMode && hasUnsavedChanges && (
+                  <Button
+                    bsSize="small"
+                    bsStyle={popButton ? 'primary' : undefined}
+                    onClick={this.overwriteDashboard}
+                  >
+                    {t('Save changes')}
+                  </Button>
+                )}
+
+                {editMode && !hasUnsavedChanges && (
+                  <Button
+                    bsSize="small"
+                    onClick={this.toggleEditMode}
+                    bsStyle={undefined}
+                    disabled={!userCanEdit}
+                  >
+                    {t('Switch to view mode')}
+                  </Button>
+                )}
+
+                {editMode && (
+                  <UndoRedoKeylisteners
+                    onUndo={this.handleCtrlZ}
+                    onRedo={this.handleCtrlY}
+                  />
+                )}
+              </div>
+            )}
+
+            {!editMode && !hasUnsavedChanges && (
+              <Button
+                bsSize="small"
+                onClick={this.toggleEditMode}
+                bsStyle={popButton ? 'primary' : undefined}
+                disabled={!userCanEdit}
+              >
+                {t('Edit dashboard')}
+              </Button>
+            )}
+
+            <HeaderActionsDropdown
+              addSuccessToast={this.props.addSuccessToast}
+              addDangerToast={this.props.addDangerToast}
               dashboardId={dashboardInfo.id}
-              isPublished={isPublished}
-              savePublished={this.props.savePublished}
-              canEdit={userCanEdit}
-              canSave={userCanSaveAs}
+              dashboardTitle={dashboardTitle}
+              layout={layout}
+              expandedSlices={expandedSlices}
+              css={css}
+              colorNamespace={colorNamespace}
+              colorScheme={colorScheme}
+              onSave={onSave}
+              onChange={onChange}
+              forceRefreshAllCharts={this.forceRefresh}
+              startPeriodicRender={this.startPeriodicRender}
+              refreshFrequency={refreshFrequency}
+              setRefreshFrequency={setRefreshFrequency}
+              updateCss={updateCss}
+              editMode={editMode}
+              hasUnsavedChanges={hasUnsavedChanges}
+              userCanEdit={userCanEdit}
+              userCanSave={userCanSaveAs}
+              isLoading={isLoading}
             />
-          </span>
-          <span className="favstar">
-            <FaveStar
-              itemId={dashboardInfo.id}
-              fetchFaveStar={this.props.fetchFaveStar}
-              saveFaveStar={this.props.saveFaveStar}
-              isStarred={this.props.isStarred}
-            />
-          </span>
+          </div>
+
         </div>
-
-        <div className="button-container">
-          {userCanSaveAs && (
-            <div className="button-container">
-              {editMode && (
-                <Button
-                  bsSize="small"
-                  onClick={onUndo}
-                  disabled={undoLength < 1}
-                  bsStyle={this.state.emphasizeUndo ? 'primary' : undefined}
-                >
-                  <div title="Undo" className="undo-action fa fa-reply" />
-                </Button>
-              )}
-
-              {editMode && (
-                <Button
-                  bsSize="small"
-                  onClick={onRedo}
-                  disabled={redoLength < 1}
-                  bsStyle={this.state.emphasizeRedo ? 'primary' : undefined}
-                >
-                  <div title="Redo" className="redo-action fa fa-share" />
-                </Button>
-              )}
-
-              {editMode && (
-                <Button
-                  active={builderPaneType === BUILDER_PANE_TYPE.ADD_COMPONENTS}
-                  bsSize="small"
-                  onClick={this.onInsertComponentsButtonClick}
-                >
-                  {t('Components')}
-                </Button>
-              )}
-
-              {editMode && (
-                <Button
-                  active={builderPaneType === BUILDER_PANE_TYPE.COLORS}
-                  bsSize="small"
-                  onClick={this.onColorsButtonClick}
-                >
-                  {t('Colors')}
-                </Button>
-              )}
-
-              {editMode && (
-                <FilterScopeModal
-                  triggerNode={<Button bsSize="small">{t('Filters')}</Button>}
-                />
-              )}
-
-              {editMode && hasUnsavedChanges && (
-                <Button
-                  bsSize="small"
-                  bsStyle={popButton ? 'primary' : undefined}
-                  onClick={this.overwriteDashboard}
-                >
-                  {t('Save changes')}
-                </Button>
-              )}
-
-              {editMode && !hasUnsavedChanges && (
-                <Button
-                  bsSize="small"
-                  onClick={this.toggleEditMode}
-                  bsStyle={undefined}
-                  disabled={!userCanEdit}
-                >
-                  {t('Switch to view mode')}
-                </Button>
-              )}
-
-              {editMode && (
-                <UndoRedoKeylisteners
-                  onUndo={this.handleCtrlZ}
-                  onRedo={this.handleCtrlY}
-                />
-              )}
-            </div>
-          )}
-
-          {!editMode && !hasUnsavedChanges && (
-            <Button
-              bsSize="small"
-              onClick={this.toggleEditMode}
-              bsStyle={popButton ? 'primary' : undefined}
-              disabled={!userCanEdit}
-            >
-              {t('Edit dashboard')}
-            </Button>
-          )}
-
-          <HeaderActionsDropdown
-            addSuccessToast={this.props.addSuccessToast}
-            addDangerToast={this.props.addDangerToast}
-            dashboardId={dashboardInfo.id}
-            dashboardTitle={dashboardTitle}
-            layout={layout}
-            expandedSlices={expandedSlices}
-            css={css}
-            colorNamespace={colorNamespace}
-            colorScheme={colorScheme}
-            onSave={onSave}
-            onChange={onChange}
-            forceRefreshAllCharts={this.forceRefresh}
-            startPeriodicRender={this.startPeriodicRender}
-            refreshFrequency={refreshFrequency}
-            setRefreshFrequency={setRefreshFrequency}
-            updateCss={updateCss}
-            editMode={editMode}
-            hasUnsavedChanges={hasUnsavedChanges}
-            userCanEdit={userCanEdit}
-            userCanSave={userCanSaveAs}
-            isLoading={isLoading}
-          />
-        </div>
-      </div>
-    );
+      );
+    } else return <div className="dashboard-header"></div>
   }
 }
 

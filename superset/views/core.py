@@ -496,8 +496,8 @@ class DashboardModelView(SupersetModelView, DeleteMixin):
     add_title = _("Add Dashboard")
     edit_title = _("Edit Dashboard")
 
-    list_columns = ["dashboard_link", "creator", "published", "modified"]
-    order_columns = ["modified", "published"]
+    list_columns = ["top_category","sub_category","dashboard_link", "creator", "published", "modified"]
+    order_columns = ["modified", "published","top_category","sub_category"]
     edit_columns = [
         "dashboard_title",
         "slug",
@@ -506,9 +506,11 @@ class DashboardModelView(SupersetModelView, DeleteMixin):
         "css",
         "json_metadata",
         "published",
+        "top_category",
+        "sub_category"
     ]
     show_columns = edit_columns + ["table_names", "charts"]
-    search_columns = ("dashboard_title", "slug", "owners", "published")
+    search_columns = ("dashboard_title", "slug", "owners", "published","top_category","sub_category")
     add_columns = edit_columns
     base_order = ("changed_on", "desc")
     description_columns = {
@@ -549,6 +551,8 @@ class DashboardModelView(SupersetModelView, DeleteMixin):
         "css": _("CSS"),
         "json_metadata": _("JSON Metadata"),
         "table_names": _("Underlying Tables"),
+        'top_category': _('Top Category'),
+        'sub_category': _('Sub Category'),
     }
 
     def pre_add(self, obj):
@@ -1618,6 +1622,8 @@ class Superset(BaseSupersetView):
         else:
             dash.slices = original_dash.slices
         dash.params = original_dash.params
+        dash.top_category = original_dash.top_category
+        dash.sub_category = original_dash.sub_category
 
         self._set_dash_metadata(dash, data)
         session.add(dash)
@@ -2231,7 +2237,7 @@ class Superset(BaseSupersetView):
             return json_success(
                 json.dumps(bootstrap_data, default=utils.pessimistic_json_iso_dttm_ser)
             )
-
+       
         return self.render_template(
             "superset/dashboard.html",
             entry="dashboard",
@@ -2870,14 +2876,14 @@ class Superset(BaseSupersetView):
             columns = [c["name"] for c in obj["columns"]]
             df = pd.DataFrame.from_records(obj["data"], columns=columns)
             logging.info("Using pandas to convert to CSV")
-            csv = df.to_csv(index=False, **config["CSV_EXPORT"])
+            csv = df.to_csv(index=False, **config.get("CSV_EXPORT"))
         else:
             logging.info("Running a query to turn into CSV")
             sql = query.select_sql or query.executed_sql
             df = query.database.get_df(sql, query.schema)
             # TODO(bkyryliuk): add compression=gzip for big files.
-            csv = df.to_csv(index=False, **config["CSV_EXPORT"])
-        response = Response(csv, mimetype="text/csv")
+            csv = df.to_csv(index=False, **config.get("CSV_EXPORT"))
+        response = CsvResponse(csv, mimetype="text/csv")
         response.headers[
             "Content-Disposition"
         ] = f"attachment; filename={query.name}.csv"

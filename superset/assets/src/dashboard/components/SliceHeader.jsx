@@ -24,6 +24,7 @@ import EditableTitle from '../../components/EditableTitle';
 import TooltipWrapper from '../../components/TooltipWrapper';
 import SliceHeaderControls from './SliceHeaderControls';
 
+
 const propTypes = {
   innerRef: PropTypes.func,
   slice: PropTypes.object.isRequired,
@@ -45,7 +46,7 @@ const propTypes = {
   sliceCanEdit: PropTypes.bool,
   componentId: PropTypes.string.isRequired,
   filters: PropTypes.object.isRequired,
-  addDangerToast: PropTypes.func.isRequired,
+  addDangerToast: PropTypes.func.isRequired
 };
 
 const defaultProps = {
@@ -94,9 +95,13 @@ class SliceHeader extends React.PureComponent {
       annotationQuery,
       annotationError,
       componentId,
-      addDangerToast,
+      addDangerToast
+      //dashboardInfo,
     } = this.props;
 
+    //const userCanEdit = dashboardInfo.dash_edit_perm;
+    //const userCanSaveAs = dashboardInfo.dash_save_perm;
+    //const userCanEdit = true
     return (
       <div className="chart-header" ref={innerRef}>
         <div className="header">
@@ -112,6 +117,7 @@ class SliceHeader extends React.PureComponent {
             onSaveTitle={updateSliceName}
             showTooltip={false}
           />
+
           {!!Object.values(annotationQuery).length && (
             <TooltipWrapper
               label="annotations-loading"
@@ -130,6 +136,7 @@ class SliceHeader extends React.PureComponent {
               <i className="fa fa-exclamation-circle danger" />
             </TooltipWrapper>
           )}
+
           {!editMode && (
             <SliceHeaderControls
               slice={slice}
@@ -151,6 +158,8 @@ class SliceHeader extends React.PureComponent {
         </div>
       </div>
     );
+
+
   }
 }
 
